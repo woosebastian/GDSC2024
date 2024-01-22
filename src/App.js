@@ -1,14 +1,22 @@
-import './App.css';
+import { useEffect } from 'react';
+
+// 20073185
+
+const API_URL = 'http://www.omdbapi.com?apikey=20073185';
 
 const App = () => {
-  const name = 'John';
-  const isNameShowing = false;
 
-  return (
-    <div className="App">
-      <h1>Hello, {isNameShowing ? name : 'someone'}!</h1>
-    </div>
-  );
+    const searchMovies = async (title) => {
+        const response = await fetch(``);
+    }
+
+    useEffect(() => {
+
+    }, []);
+
+    return (
+        <h1>App</h1>
+    );
 }
 
 export default App;
