@@ -1,6 +1,16 @@
+// index.jsx
+
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Index from './pages/Index/Index';
+import Planner from './pages/Planner/Planner';
 
-import App from './App';
-
-ReactDOM.render(<App />, document.getElementById('root'));
+ReactDOM.createRoot(document.getElementById('root')).render(
+	<Router>
+		<Routes>
+			<Route path='/' element={<Index />} />
+			<Route path='/planner' element={<Planner />} />
+		</Routes>
+	</Router>
+);
