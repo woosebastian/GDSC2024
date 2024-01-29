@@ -3,17 +3,17 @@
 	justify-content: space-between;
 	align-items: center;
 	padding: 1rem;
-	background-color: #f2f2f2; /* Set your desired background color */
+	background-color: #f2f2f2;
 }
 
 .nav-links a {
-	margin-left: 1rem; /* Add some margin between the links */
+	margin-left: 1rem;
 	text-decoration: none;
-	color: #333; /* Set your desired text color */
+	color: #333;
 }
 
 .nav-links a:hover {
-	color: #007bff; /* Set your desired hover color */
+	color: #007bff;
 }
 
 .planner {
