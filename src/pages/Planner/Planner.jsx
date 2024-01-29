@@ -19,7 +19,6 @@ const Planner = () => {
 			if (currentUser) {
 				const db = getFirestore();
 
-				// Query 'users' collection
 				const usersCollectionRef = collection(db, 'users');
 				const usersQuery = query(
 					usersCollectionRef,
@@ -33,7 +32,6 @@ const Planner = () => {
 						const userData = usersQuerySnapshot.docs[0].data();
 						setUserName(userData.name);
 
-						// Now, query 'schedules' collection
 						const schedulesCollectionRef = collection(db, 'schedules');
 						const schedulesQuery = query(
 							schedulesCollectionRef,
@@ -64,20 +62,40 @@ const Planner = () => {
 
 	const renderScheduleTable = () => {
 		const years = Array.from({ length: 4 }, (_, i) => i + 1);
-
-		console.log('userSchedule:', userSchedule);
-
-		// Check if userSchedule is an object and has entries for all years
 		if (
 			typeof userSchedule === 'object' &&
 			years.every((year) => userSchedule[year])
 		) {
-			return <table className='schedule-table'>{/* ... */}</table>;
+			return (
+				<table className='schedule-table'>
+					<thead>
+						<tr>
+							<th>Year</th>
+							<th>Fall</th>
+							<th>Winter</th>
+							<th>Spring</th>
+							<th>Summer</th>
+						</tr>
+					</thead>
+					<tbody>
+						{years.map((year) => (
+							<tr key={year}>
+								<td>Year {year}</td>
+								{['fall', 'winter', 'spring', 'summer'].map((season) => (
+									<td key={season}>
+										{(userSchedule[year][season] || []).map((course, index) => (
+											<div key={index}>{course || 'No course'}</div>
+										))}
+									</td>
+								))}
+							</tr>
+						))}
+					</tbody>
+				</table>
+			);
 		} else if (userSchedule === null) {
-			// If userSchedule is still loading, show a loading message
 			return <p>Loading...</p>;
 		} else {
-			// If userSchedule is not an object or doesn't have the expected structure, show a message
 			return <p>No schedule data available.</p>;
 		}
 	};
