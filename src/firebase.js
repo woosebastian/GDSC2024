@@ -2,10 +2,14 @@
 
 // Import the functions you need from the SDKs you need
 import { initializeApp } from 'firebase/app';
-// import { getFirestore } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import {
+	getAuth,
+	onAuthStateChanged,
+	GoogleAuthProvider,
+	signInWithPopup,
+	signOut,
+} from 'firebase/auth';
+import { useState, useEffect } from 'react'; // Import useState and useEffect
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -21,4 +25,41 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-export { app, auth };
+const useAuth = () => {
+	const [currentUser, setCurrentUser] = useState(null);
+
+	useEffect(() => {
+		// Set up an observer to listen for changes in authentication state
+		const unsubscribe = onAuthStateChanged(auth, (user) => {
+			setCurrentUser(user);
+		});
+
+		// Cleanup the observer when the component unmounts
+		return () => unsubscribe();
+	}, []);
+
+	const signInWithGoogle = async () => {
+		const provider = new GoogleAuthProvider();
+		try {
+			await signInWithPopup(auth, provider);
+		} catch (error) {
+			console.error('Error signing in with Google:', error.message);
+		}
+	};
+
+	const signOutUser = async () => {
+		try {
+			await signOut(auth);
+		} catch (error) {
+			console.error('Error signing out:', error.message);
+		}
+	};
+
+	return {
+		currentUser,
+		signInWithGoogle,
+		signOutUser,
+	};
+};
+
+export { app, auth, useAuth };
