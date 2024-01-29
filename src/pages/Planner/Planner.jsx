@@ -44,7 +44,7 @@ const Planner = () => {
 				<h2>{userName}'s Course Planner</h2>
 				<div className='nav-links'>
 					<a href='google.com'>Generate</a>
-					<a href='lol.com'>Log Out</a>
+					<a href='google.com'>Log Out</a>
 				</div>
 			</nav>
 			<div></div>
