@@ -1,40 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter&display=swap');
+
 .navbar {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
 	padding: 1rem;
-	background-color: #f2f2f2;
-}
+	background-color: rgb(235, 244, 253);
+	font-family: 'Inter', sans-serif;
 
-.nav-links a {
-	margin-left: 1rem;
-	text-decoration: none;
-	color: #333;
-}
+	.navbar-title {}
 
-.nav-links a:hover {
-	color: #007bff;
+	.nav-links {
+		display: flex;
+		flex-direction: row;
+		margin-left: 10px;
+		text-decoration: none;
+		color: #333;
+	}
+
+	.navbar-buttons {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		margin-left: 20px;
+		background-color: #00ffea;
+		border-radius: 20px;
+		width: 100px;
+		height: 30px;
+		transition: background-color, 0.5s;
+	}
+
+	.navbar-buttons:hover {
+		background-color: #00f1dd;
+	}
 }
 
 .planner {
+	font-family: 'Inter', sans-serif;
 	margin: 20px;
-}
 
-.schedule-table {
-	width: 100%;
-	border-collapse: collapse;
-	margin-top: 20px;
-}
+	.schedule-table {
+		width: 100%;
+		border-collapse: collapse;
+		margin-top: 20px;
 
-.schedule-table th {
-	background-color: #f2f2f2;
-	padding: 10px;
-	text-align: left;
-}
+		.schedule-table-header {
+			.schedule-table-column-header {
+				background-color: #f2f2f2;
+				padding: 10px;
+				text-align: left;
+			}
+		}
 
-.schedule-table td {
-	border: 1px solid #ddd;
-	padding: 10px;
+		.schedule-table-row {
+			.schedule-table-year {
+				border: 1px solid #4c0808;
+				padding: 10px;
+
+				.schedule-table-season {
+					border: 1px solid #4c0808;
+
+					.schedule-table-class {}
+				}
+			}
+		}
+	}
 }
 
 .loading-message {

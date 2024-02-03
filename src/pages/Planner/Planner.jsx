@@ -84,22 +84,22 @@ const Planner = () => {
 			return (
 				<table className='schedule-table'>
 					<thead>
-						<tr>
-							<th>Year</th>
-							<th>Fall</th>
-							<th>Winter</th>
-							<th>Spring</th>
-							<th>Summer</th>
+						<tr className='schedule-table-header'>
+							<th className='schedule-table-column-header'>Year</th>
+							<th className='schedule-table-column-header'>Fall</th>
+							<th className='schedule-table-column-header'>Winter</th>
+							<th className='schedule-table-column-header'>Spring</th>
+							<th className='schedule-table-column-header'>Summer</th>
 						</tr>
 					</thead>
 					<tbody>
 						{years.map((year) => (
-							<tr key={year}>
-								<td>Year {year}</td>
+							<tr className='schedule-table-row' key={year}>
+								<td className='schedule-table-year'>Year {year}</td>
 								{['fall', 'winter', 'spring', 'summer'].map((season) => (
-									<td key={season}>
+									<td className='schedule-table-season' key={season}>
 										{(userSchedule[year][season] || []).map((course, index) => (
-											<div key={index}>{course || 'No course'}</div>
+											<div className='schedule-table-class' key={index}>{course || 'No course'}</div>
 										))}
 									</td>
 								))}
@@ -118,10 +118,10 @@ const Planner = () => {
 	return (
 		<>
 			<nav className='navbar'>
-				<h2>{userName}'s Course Planner</h2>
+				<h2 className='navbar-title'>{userName}'s Course Planner</h2>
 				<div className='nav-links'>
 					<a href='google.com'>Generate</a>
-					<button onClick={signOutHandler}>Log Out</button>
+					<a className='navbar-buttons' onClick={signOutHandler} href='google.com'>Log Out</a>
 				</div>
 			</nav>
 			<div className='planner'>{renderScheduleTable()}</div>
