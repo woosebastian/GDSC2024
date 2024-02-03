@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../firebase';
+import { useNavigate } from 'react-router-dom';
+import { useAuth, auth } from '../../firebase';
+import { signOut } from 'firebase/auth';
 import {
 	getFirestore,
 	collection,
@@ -13,6 +15,8 @@ const Planner = () => {
 	const [userName, setUserName] = useState('');
 	const [userSchedule, setUserSchedule] = useState([]);
 	const { currentUser } = useAuth();
+
+	const navigate = useNavigate(); // Initialize the useNavigate hook
 
 	useEffect(() => {
 		const fetchUserData = async () => {
@@ -60,6 +64,17 @@ const Planner = () => {
 
 	console.log('userSchedule:', userSchedule);
 
+	const signOutHandler = async () => {
+		try {
+			await signOut(auth);
+			console.log('User signed out');
+			// Redirect to home or any other desired page after sign-out
+			navigate('/');
+		} catch (error) {
+			console.error('Error signing out:', error.message);
+		}
+	};
+
 	const renderScheduleTable = () => {
 		const years = Array.from({ length: 4 }, (_, i) => i + 1);
 		if (
@@ -106,7 +121,7 @@ const Planner = () => {
 				<h2>{userName}'s Course Planner</h2>
 				<div className='nav-links'>
 					<a href='google.com'>Generate</a>
-					<a href='google.com'>Log Out</a>
+					<button onClick={signOutHandler}>Log Out</button>
 				</div>
 			</nav>
 			<div className='planner'>{renderScheduleTable()}</div>
