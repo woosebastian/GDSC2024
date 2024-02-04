@@ -3,12 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth, auth } from '../../firebase';
 import { signOut } from 'firebase/auth';
 import {
+	doc,
+	setDoc,
 	getFirestore,
 	collection,
 	query,
 	where,
 	getDocs,
 } from 'firebase/firestore';
+
 import './Planner.css';
 
 const Planner = () => {
@@ -75,6 +78,25 @@ const Planner = () => {
 		}
 	};
 
+	const updateScheduleInFirebase = async (userId, newSchedule) => {
+		try {
+			const db = getFirestore();
+
+			// Reference to the user's schedule document
+			const userScheduleDocRef = doc(db, 'schedules', userId);
+
+			// Use setDoc to either update the existing document or create a new one if it doesn't exist
+			await setDoc(userScheduleDocRef, {
+				_userId: userId,
+				schedule: newSchedule,
+			});
+
+			console.log('Schedule updated in Firebase');
+		} catch (error) {
+			console.error('Error updating schedule in Firebase:', error.message);
+		}
+	};
+
 	const generateSchedule = async () => {
 		try {
 			if (!currentUser) {
@@ -84,18 +106,22 @@ const Planner = () => {
 
 			const db = getFirestore();
 
-			// Fetch major requirements for Computer Science
-			const majorRequirementsDocRef = collection(db, 'classRequirements').doc(
-				'Computer Science B.S.'
+			const majorReq = collection(db, 'majorRequirements');
+			const majorReqQuery = query(
+				majorReq,
+				where('major', '==', 'Computer Science B.S.')
 			);
-			const majorRequirementsDoc = await getDocs(majorRequirementsDocRef);
 
-			if (!majorRequirementsDoc.exists()) {
+			const majorRequirementsDoc = await getDocs(majorReqQuery);
+
+			if (majorRequirementsDoc.empty) {
 				console.error('Major requirements document not found');
 				return;
 			}
 
-			const majorRequirements = majorRequirementsDoc.data();
+			const majorRequirements = majorRequirementsDoc.docs[0].data();
+
+			console.log('Major Requirements:', majorRequirements);
 
 			// Fetch user's schedule data
 			const schedulesCollectionRef = collection(db, 'schedules');
@@ -108,12 +134,16 @@ const Planner = () => {
 
 			if (!schedulesQuerySnapshot.empty) {
 				const scheduleData = schedulesQuerySnapshot.docs[0].data();
-				const currentSchedule = scheduleData.schedule;
+				const currentSchedule = Array.isArray(scheduleData.schedule)
+					? scheduleData.schedule
+					: [];
 
 				// Filter out already added classes
 				const addedClasses = currentSchedule.flatMap((season) =>
 					season.flatMap((course) => course)
 				);
+
+				console.log('Added Classes:', addedClasses);
 
 				// Generate a new schedule based on major requirements and pre-requisites
 				const newSchedule = generateNewSchedule(
@@ -121,13 +151,11 @@ const Planner = () => {
 					addedClasses
 				);
 
+				// Update the schedule in the Firebase database
+				await updateScheduleInFirebase(currentUser.uid, newSchedule);
+
 				// Update userSchedule state with the new schedule
 				setUserSchedule(newSchedule);
-
-				// Update the schedule in the Firebase database
-				// Note: You need to implement the function to update the schedule in Firebase
-				// It would involve updating the 'schedules' collection for the current user
-				// with the newSchedule data
 			} else {
 				console.error('Schedule document does not exist.');
 			}
@@ -138,18 +166,66 @@ const Planner = () => {
 
 	// Function to generate a new schedule based on major requirements and pre-requisites
 	const generateNewSchedule = (majorRequirements, addedClasses) => {
-		// Implement your logic here to generate the new schedule
-		// Ensure at most two major classes each quarter and follow the order specified
+		const newSchedule = {};
+		const years = Array.from({ length: 4 }, (_, i) => i + 1);
+		const quarters = ['fall', 'winter', 'spring', 'summer'];
 
-		// Example logic:
-		// 1. Iterate through majorRequirements and check pre-requisites
-		// 2. Check if each major class is not already added (use addedClasses)
-		// 3. Add classes to the new schedule
+		years.forEach((year) => {
+			newSchedule[year] = {};
+			quarters.forEach((quarter) => {
+				const quarterSchedule = [];
 
-		// Dummy implementation for illustration purposes
-		const newSchedule = majorRequirements.map((course) => [course]); // Assuming one class per season
+				Object.keys(majorRequirements.classRequirements).forEach((course) => {
+					if (
+						quarterSchedule.length < 2 &&
+						!addedClasses.includes(course) &&
+						arePrerequisitesSatisfied(course, majorRequirements, addedClasses)
+					) {
+						quarterSchedule.push(course);
+						addedClasses.push(course);
+					}
+				});
+
+				newSchedule[year][quarter] =
+					quarterSchedule.length > 0
+						? quarterSchedule
+						: [getRandomClass(), getRandomClass()];
+			});
+		});
 
 		return newSchedule;
+	};
+
+	const getRandomClass = () => {
+		const randomClasses = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'];
+		return randomClasses[Math.floor(Math.random() * randomClasses.length)];
+	};
+
+	const arePrerequisitesSatisfied = (
+		course,
+		majorRequirements,
+		addedClasses
+	) => {
+		const prerequisites = majorRequirements.classRequirements[course];
+
+		console.log('Checking prerequisites for course:', course);
+		console.log('Prerequisites:', prerequisites);
+
+		if (Array.isArray(prerequisites)) {
+			// Prioritize courses with an empty string value
+			const prioritizedPrerequisites = prerequisites.sort((a, b) => {
+				if (a === '') return -1;
+				if (b === '') return 1;
+				return 0;
+			});
+
+			return prioritizedPrerequisites.every((prereq) =>
+				addedClasses.includes(prereq)
+			);
+		} else {
+			console.error('Prerequisites array is not an array for course:', course);
+			return false;
+		}
 	};
 
 	const renderScheduleTable = () => {
@@ -199,9 +275,9 @@ const Planner = () => {
 			<nav className='navbar'>
 				<h2 className='navbar-title'>{userName}'s Course Planner</h2>
 				<div className='nav-links'>
-					<a onClick={generateSchedule} href='/planner'>
+					<button className='navbar-buttons' onClick={generateSchedule}>
 						Generate
-					</a>
+					</button>
 					<a className='navbar-buttons' onClick={signOutHandler} href='/'>
 						Log Out
 					</a>
