@@ -175,10 +175,24 @@ const Planner = () => {
 			quarters.forEach((quarter) => {
 				const quarterSchedule = [];
 
+				// First, add classes with null value
 				Object.keys(majorRequirements.classRequirements).forEach((course) => {
 					if (
 						quarterSchedule.length < 2 &&
 						!addedClasses.includes(course) &&
+						majorRequirements.classRequirements[course] === null
+					) {
+						quarterSchedule.push(course);
+						addedClasses.push(course);
+					}
+				});
+
+				// Then, add other classes that have satisfied prerequisites
+				Object.keys(majorRequirements.classRequirements).forEach((course) => {
+					if (
+						quarterSchedule.length < 2 &&
+						!addedClasses.includes(course) &&
+						majorRequirements.classRequirements[course] !== null &&
 						arePrerequisitesSatisfied(course, majorRequirements, addedClasses)
 					) {
 						quarterSchedule.push(course);
@@ -186,10 +200,14 @@ const Planner = () => {
 					}
 				});
 
-				newSchedule[year][quarter] =
-					quarterSchedule.length > 0
-						? quarterSchedule
-						: [getRandomClass(), getRandomClass()];
+				// If needed, fill in the remaining slots with random classes
+				while (quarterSchedule.length < 2) {
+					const randomClass = getRandomClass();
+					quarterSchedule.push(randomClass);
+					addedClasses.push(randomClass);
+				}
+
+				newSchedule[year][quarter] = quarterSchedule;
 			});
 		});
 
@@ -214,8 +232,8 @@ const Planner = () => {
 		if (Array.isArray(prerequisites)) {
 			// Prioritize courses with an empty string value
 			const prioritizedPrerequisites = prerequisites.sort((a, b) => {
-				if (a === '') return -1;
-				if (b === '') return 1;
+				if (a === null) return -1;
+				if (b === null) return 1;
 				return 0;
 			});
 
