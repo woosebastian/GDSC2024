@@ -23,15 +23,17 @@
 		justify-content: center;
 		align-items: center;
 		margin-left: 20px;
-		background-color: #00ffea;
+		background-color: rgb(231, 244, 255);
+		border: solid black 2px;
 		border-radius: 20px;
 		width: 100px;
 		height: 30px;
 		transition: background-color, 0.5s;
+		font-size: 16px;
 	}
 
 	.navbar-buttons:hover {
-		background-color: #00f1dd;
+		background-color: rgb(216, 236, 253);
 	}
 }
 
@@ -56,12 +58,20 @@
 			.schedule-table-year {
 				border: 1px solid #4c0808;
 				padding: 10px;
+			}
 
-				.schedule-table-season {
-					border: 1px solid #4c0808;
+			.schedule-table-season {
+				border: 1px solid #4c0808;
 
-					.schedule-table-class {}
+				.schedule-table-class {}
+
+				.schedule-table-class:hover {
+					background-color: rgb(120, 253, 240);
 				}
+			}
+
+			.schedule-table-season:hover {
+				background-color: rgb(171, 255, 247);
 			}
 		}
 	}

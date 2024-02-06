@@ -266,7 +266,7 @@ const Planner = () => {
 					<tbody>
 						{years.map((year) => (
 							<tr className='schedule-table-row' key={year}>
-								<td className='schedule-table-year'>Year {year}</td>
+								<td className='schedule-table-year'>{year}</td>
 								{['fall', 'winter', 'spring', 'summer'].map((season) => (
 									<td className='schedule-table-season' key={season}>
 										{(userSchedule[year][season] || []).map((course, index) => (
@@ -293,12 +293,12 @@ const Planner = () => {
 			<nav className='navbar'>
 				<h2 className='navbar-title'>{userName}'s Course Planner</h2>
 				<div className='nav-links'>
-					<button className='navbar-buttons' onClick={generateSchedule}>
+					<div className='navbar-buttons' onClick={generateSchedule}>
 						Generate
-					</button>
-					<a className='navbar-buttons' onClick={signOutHandler} href='/'>
+					</div>
+					<div className='navbar-buttons' onClick={signOutHandler} href='/'>
 						Log Out
-					</a>
+					</div>
 				</div>
 			</nav>
 			<div className='planner'>{renderScheduleTable()}</div>

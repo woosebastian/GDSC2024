@@ -22,10 +22,11 @@
 		justify-content: center;
 		height: 50px;
 		width: 200px;
-		background-color: rgb(235, 244, 253);
+		background-color: rgb(231, 244, 255);
+		border: solid black 2px;
 		border-radius: 40px;
 		/* https://www.w3schools.com/css/css3_transitions.asp */
-		transition: background-color 0.5s;
+		transition: background-color, 0.5s;
 
 		/* .signInButton {
           font-size: larger;
