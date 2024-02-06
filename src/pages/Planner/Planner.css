@@ -39,18 +39,22 @@
 
 .planner {
 	font-family: 'Inter', sans-serif;
-	margin: 20px;
+	/* margin: 20px; */
 
 	.schedule-table {
 		width: 100%;
 		border-collapse: collapse;
 		margin-top: 20px;
+		/* https://stackoverflow.com/questions/21495634/how-to-make-a-table-with-equal-column-widths-in-css */
+		table-layout: fixed;
+		/* border: solid black 1px; */
 
 		.schedule-table-header {
 			.schedule-table-column-header {
 				background-color: #f2f2f2;
 				padding: 10px;
 				text-align: left;
+				border: solid black 1px;
 			}
 		}
 
@@ -63,7 +67,9 @@
 			.schedule-table-season {
 				border: 1px solid #4c0808;
 
-				.schedule-table-class {}
+				.schedule-table-class {
+					padding: 10px;
+				}
 
 				.schedule-table-class:hover {
 					background-color: rgb(120, 253, 240);
