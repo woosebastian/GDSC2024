@@ -188,17 +188,26 @@ const Planner = () => {
 				});
 
 				// Then, add other classes that have satisfied prerequisites
-				Object.keys(majorRequirements.classRequirements).forEach((course) => {
-					if (
-						quarterSchedule.length < 2 &&
-						!addedClasses.includes(course) &&
-						majorRequirements.classRequirements[course] !== null &&
-						arePrerequisitesSatisfied(course, majorRequirements, addedClasses)
-					) {
-						quarterSchedule.push(course);
-						addedClasses.push(course);
-					}
-				});
+				Object.keys(majorRequirements.classRequirements)
+					.sort((a, b) => {
+						const prereqsA = majorRequirements.classRequirements[a];
+						const prereqsB = majorRequirements.classRequirements[b];
+						return (
+							(prereqsA ? prereqsA.length : 0) -
+							(prereqsB ? prereqsB.length : 0)
+						);
+					})
+					.forEach((course) => {
+						if (
+							quarterSchedule.length < 2 &&
+							!addedClasses.includes(course) &&
+							majorRequirements.classRequirements[course] !== null &&
+							arePrerequisitesSatisfied(course, majorRequirements, addedClasses)
+						) {
+							quarterSchedule.push(course);
+							addedClasses.push(course);
+						}
+					});
 
 				// If needed, fill in the remaining slots with random classes
 				while (quarterSchedule.length < 2) {
