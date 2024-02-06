@@ -180,7 +180,7 @@ const Planner = () => {
 					if (
 						quarterSchedule.length < 2 &&
 						!addedClasses.includes(course) &&
-						majorRequirements.classRequirements[course] === null
+						majorRequirements.classRequirements[course][0] === null
 					) {
 						quarterSchedule.push(course);
 						addedClasses.push(course);
