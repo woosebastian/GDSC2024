@@ -1,7 +1,7 @@
 // index.jsx
 
 import React from 'react';
-import ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom/client';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Index from './pages/Index/Index';
 import Planner from './pages/Planner/Planner';

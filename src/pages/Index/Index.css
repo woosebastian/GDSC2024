@@ -36,6 +36,7 @@
 
 	.logIn:hover {
 		background-color: rgb(216, 236, 253);
+		cursor: pointer;
 	}
 }
 

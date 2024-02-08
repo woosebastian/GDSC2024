@@ -8,7 +8,7 @@
 	background-color: rgb(235, 244, 253);
 	font-family: 'Inter', sans-serif;
 
-	.navbar-title {}
+	/* .navbar-title {} */
 
 	.nav-links {
 		display: flex;
@@ -34,20 +34,21 @@
 
 	.navbar-buttons:hover {
 		background-color: rgb(216, 236, 253);
+		cursor: pointer;
 	}
 }
 
 .planner {
 	font-family: 'Inter', sans-serif;
-	/* margin: 20px; */
+	margin: 20px;
 
 	.schedule-table {
 		width: 100%;
 		border-collapse: collapse;
 		margin-top: 20px;
 		/* https://stackoverflow.com/questions/21495634/how-to-make-a-table-with-equal-column-widths-in-css */
-		table-layout: fixed;
-		/* border: solid black 1px; */
+		/* https://support.symphony.com/hc/en-us/articles/360016442352-How-to-amend-an-HTML-table-column-width#:~:text=The%20table%2Dlayout%3Aauto%20parameter,in%20the%20table%20as%20desired. */
+		table-layout: auto;
 
 		.schedule-table-header {
 			.schedule-table-column-header {
@@ -62,10 +63,12 @@
 			.schedule-table-year {
 				border: 1px solid #4c0808;
 				padding: 10px;
+				width: 10%;
 			}
 
 			.schedule-table-season {
 				border: 1px solid #4c0808;
+				width: 22.5%;
 
 				.schedule-table-class {
 					padding: 10px;
@@ -73,11 +76,13 @@
 
 				.schedule-table-class:hover {
 					background-color: rgb(120, 253, 240);
+					cursor: pointer;
 				}
 			}
 
 			.schedule-table-season:hover {
 				background-color: rgb(171, 255, 247);
+				cursor: pointer;
 			}
 		}
 	}
