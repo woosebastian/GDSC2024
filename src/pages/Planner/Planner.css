@@ -75,13 +75,13 @@
 				}
 
 				.schedule-table-class:hover {
-					background-color: rgb(120, 253, 240);
+					background-color: aliceblue;
 					cursor: pointer;
 				}
 			}
 
 			.schedule-table-season:hover {
-				background-color: rgb(171, 255, 247);
+				background-color: rgb(208, 225, 241);
 				cursor: pointer;
 			}
 		}
