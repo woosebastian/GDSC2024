@@ -71,18 +71,45 @@
 				width: 22.5%;
 
 				.schedule-table-class {
+					display: flex;
+					flex-direction: row;
 					padding: 10px;
+					justify-content: space-between;
+
+					/*https://fonts.google.com/icons?selected=Material+Symbols+Outlined:lock:FILL@0;wght@400;GRAD@0;opsz@24&icon.query=lock*/
+					.material-symbols-outlined {
+						cursor: pointer;
+						visibility: hidden;
+
+						font-variation-settings:
+							'FILL' 0,
+							'wght' 400,
+							'GRAD' 0,
+							'opsz' 24
+					}
 				}
 
 				.schedule-table-class:hover {
-					background-color: aliceblue;
-					cursor: pointer;
+					background-color: rgb(208, 225, 241);
+					/* cursor: pointer; */
+
+					/*https://fonts.google.com/icons?selected=Material+Symbols+Outlined:lock:FILL@0;wght@400;GRAD@0;opsz@24&icon.query=lock*/
+					.material-symbols-outlined {
+						cursor: pointer;
+						visibility: visible;
+
+						font-variation-settings:
+							'FILL' 0,
+							'wght' 400,
+							'GRAD' 0,
+							'opsz' 24
+					}
 				}
 			}
 
 			.schedule-table-season:hover {
-				background-color: rgb(208, 225, 241);
-				cursor: pointer;
+				background-color: aliceblue;
+				/* cursor: pointer; */
 			}
 		}
 	}

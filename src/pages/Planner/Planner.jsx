@@ -14,6 +14,7 @@ import {
 
 import './Planner.css';
 
+// https://stackoverflow.com/questions/57373072/state-is-not-defined
 const Planner = () => {
 	const [userName, setUserName] = useState('');
 	const [userSchedule, setUserSchedule] = useState([]);
@@ -280,7 +281,15 @@ const Planner = () => {
 									<td className='schedule-table-season' key={season}>
 										{(userSchedule[year][season] || []).map((course, index) => (
 											<div className='schedule-table-class' key={index}>
-												{course || 'No course'}
+												{course["class"] || 'No course'}
+												{/* https://fonts.google.com/icons?selected=Material+Symbols+Outlined:lock_open:FILL@0;wght@400;GRAD@0;opsz@24&icon.query=lock&icon.platform=web */}
+												<span className="material-symbols-outlined" onClick={() => {
+													course.locked = !course.locked;
+													updateLockedInFirebase(currentUser.uid, locked);
+													console.log(course.locked);
+												}}>
+													{course.locked == true ? "lock" : "lock_open"}
+												</span>
 											</div>
 										))}
 									</td>
@@ -288,7 +297,7 @@ const Planner = () => {
 							</tr>
 						))}
 					</tbody>
-				</table>
+				</table >
 			);
 		} else if (userSchedule === null) {
 			return <p>Loading...</p>;
