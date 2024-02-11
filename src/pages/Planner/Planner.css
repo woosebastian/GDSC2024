@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
 
 .navbar {
 	display: flex;
@@ -104,6 +104,11 @@
 							'GRAD' 0,
 							'opsz' 24
 					}
+				}
+
+				/* https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_nesting/Using_CSS_nesting */
+				& .highlight {
+					font-weight: 700;
 				}
 			}
 
