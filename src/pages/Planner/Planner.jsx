@@ -19,12 +19,13 @@ import './Planner.css';
 // https://stackoverflow.com/questions/57373072/state-is-not-defined
 const Planner = () => {
 	const [rerender, setRerender] = useState(false);
-
+	const [name, setName] = useState('');
 	const [userName, setUserName] = useState('');
 	const [userSchedule, setUserSchedule] = useState([]);
+	const [majorPopupOpen, setMajorPopupOpen] = useState(false); // State to track whether major popup is open
+	const [major, setMajor] = useState(''); // State to store user's major
 	const { currentUser } = useAuth();
-
-	const navigate = useNavigate(); // Initialize the useNavigate hook
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		const fetchUserData = async () => {
@@ -59,7 +60,8 @@ const Planner = () => {
 							console.error('Schedule document does not exist.');
 						}
 					} else {
-						console.error('User document does not exist.');
+						// User document does not exist, open major popup
+						setMajorPopupOpen(true);
 					}
 				} catch (error) {
 					console.error('Error fetching user data:', error.message);
@@ -69,6 +71,34 @@ const Planner = () => {
 
 		fetchUserData();
 	}, [currentUser]);
+
+	// Function to handle major submission
+	// Function to handle major submission
+	// Function to handle major submission
+	const handleMajorSubmit = async () => {
+		try {
+			const db = getFirestore();
+			const userRef = doc(db, 'users', currentUser.uid);
+
+			// Create or update user document with name, major, and email
+			await setDoc(userRef, {
+				_userId: currentUser.uid,
+				name: name,
+				major: major,
+				email: currentUser.email,
+			});
+
+			// Generate a new schedule based on major requirements
+			const newSchedule = generateSchedule(major);
+
+			// Update the schedule in the Firebase database
+			await updateScheduleInFirebase(currentUser.uid, newSchedule);
+
+			setMajorPopupOpen(false); // Close major popup
+		} catch (error) {
+			console.error('Error creating user document:', error.message);
+		}
+	};
 
 	console.log('userSchedule:', userSchedule);
 
@@ -128,7 +158,7 @@ const Planner = () => {
 
 			console.log('Major Requirements:', majorRequirements);
 
-			// Fetch user's schedule data
+			// Check if the user already has a schedule document
 			const schedulesCollectionRef = collection(db, 'schedules');
 			const schedulesQuery = query(
 				schedulesCollectionRef,
@@ -137,33 +167,27 @@ const Planner = () => {
 
 			const schedulesQuerySnapshot = await getDocs(schedulesQuery);
 
+			let newSchedule;
 			if (!schedulesQuerySnapshot.empty) {
+				// User already has a schedule document, generate a new schedule based on existing data
 				const scheduleData = schedulesQuerySnapshot.docs[0].data();
 				const currentSchedule = Array.isArray(scheduleData.schedule)
 					? scheduleData.schedule
 					: [];
-
-				// Filter out already added classes
 				const addedClasses = currentSchedule.flatMap((season) =>
 					season.flatMap((course) => course)
 				);
-
-				console.log('Added Classes:', addedClasses);
-
-				// Generate a new schedule based on major requirements and pre-requisites
-				const newSchedule = generateNewSchedule(
-					majorRequirements,
-					addedClasses
-				);
-
-				// Update the schedule in the Firebase database
-				await updateScheduleInFirebase(currentUser.uid, newSchedule);
-
-				// Update userSchedule state with the new schedule
-				setUserSchedule(newSchedule);
+				newSchedule = generateNewSchedule(majorRequirements, addedClasses);
 			} else {
-				console.error('Schedule document does not exist.');
+				// User doesn't have a schedule document, generate a new schedule from scratch
+				newSchedule = generateNewSchedule(majorRequirements, []);
 			}
+
+			// Update the schedule in the Firebase database
+			await updateScheduleInFirebase(currentUser.uid, newSchedule);
+
+			// Update userSchedule state with the new schedule
+			setUserSchedule(newSchedule);
 		} catch (error) {
 			console.error('Error generating schedule:', error.message);
 		}
@@ -284,41 +308,56 @@ const Planner = () => {
 								{['fall', 'winter', 'spring', 'summer'].map((season) => (
 									<td className='schedule-table-season' key={season}>
 										{(userSchedule[year][season] || []).map((course, index) => (
-											<div className={course.locked == false ? 'schedule-table-class' : 'schedule-table-class highlight'} key={index}>
-												{course["class"] || 'No course'}
+											<div
+												className={
+													course.locked === false
+														? 'schedule-table-class'
+														: 'schedule-table-class highlight'
+												}
+												key={index}>
+												{course['class'] || 'No course'}
 												{/* https://fonts.google.com/icons?selected=Material+Symbols+Outlined:lock_open:FILL@0;wght@400;GRAD@0;opsz@24&icon.query=lock&icon.platform=web */}
 												{/* https://chat.openai.com/share/f92fcf50-45ab-474c-9053-486fba15dab0 */}
-												<span className="material-symbols-outlined" onClick={async () => {
-													// https://stackoverflow.com/questions/47295541/cloud-firestore-update-fields-in-nested-objects-with-dynamic-key
-													// https://www.reddit.com/r/Firebase/comments/vp8ugv/error_dbcollection_is_not_a_function/
-													// https://community.retool.com/t/writing-to-nested-objects-in-firebase-cloud-firestore-using-update-document/25161
-													// https://chat.openai.com/share/b420aa9a-9d80-4eb4-9fd2-0716ceeee951
-													// https://g.co/gemini/share/32f59b37be66
-													// https://g.co/gemini/share/856f516f439f
-													// https://g.co/gemini/share/5727f64c6212
-													const db = getFirestore();
-													const docRef = doc(db, 'schedules', currentUser.uid);
-													const docSnap = await getDoc(docRef);
-													if (docSnap.exists()) {
-														const updatedData = docSnap.data(); // Get the entire document data
-														const updatedCourse = { ...updatedData.schedule[year][season][index] }; // Create a copy of the course
-														updatedCourse.locked = !updatedCourse.locked; // Toggle the value of locked
-														updatedData.schedule[year][season][index] = updatedCourse; // Update the course in the document data
-														course.locked = updatedCourse.locked;
+												<span
+													className='material-symbols-outlined'
+													onClick={async () => {
+														// https://stackoverflow.com/questions/47295541/cloud-firestore-update-fields-in-nested-objects-with-dynamic-key
+														// https://www.reddit.com/r/Firebase/comments/vp8ugv/error_dbcollection_is_not_a_function/
+														// https://community.retool.com/t/writing-to-nested-objects-in-firebase-cloud-firestore-using-update-document/25161
+														// https://chat.openai.com/share/b420aa9a-9d80-4eb4-9fd2-0716ceeee951
+														// https://g.co/gemini/share/32f59b37be66
+														// https://g.co/gemini/share/856f516f439f
+														// https://g.co/gemini/share/5727f64c6212
+														const db = getFirestore();
+														const docRef = doc(
+															db,
+															'schedules',
+															currentUser.uid
+														);
+														const docSnap = await getDoc(docRef);
+														if (docSnap.exists()) {
+															const updatedData = docSnap.data(); // Get the entire document data
+															const updatedCourse = {
+																...updatedData.schedule[year][season][index],
+															}; // Create a copy of the course
+															updatedCourse.locked = !updatedCourse.locked; // Toggle the value of locked
+															updatedData.schedule[year][season][index] =
+																updatedCourse; // Update the course in the document data
+															course.locked = updatedCourse.locked;
 
-														await updateDoc(docRef, updatedData);
-														console.log("Document successfully updated!");
+															await updateDoc(docRef, updatedData);
+															console.log('Document successfully updated!');
 
-														// https://www.educative.io/answers/how-to-force-a-react-component-to-re-render
-														// https://stackoverflow.com/questions/46240647/how-to-force-a-functional-react-component-to-render
-														setRerender(!rerender);
-													} else {
-														console.error("Document does not exist!");
-													}
+															// https://www.educative.io/answers/how-to-force-a-react-component-to-re-render
+															// https://stackoverflow.com/questions/46240647/how-to-force-a-functional-react-component-to-render
+															setRerender(!rerender);
+														} else {
+															console.error('Document does not exist!');
+														}
 
-													console.log(course.locked);
-												}}>
-													{course.locked == true ? "lock" : "lock_open"}
+														console.log(course.locked);
+													}}>
+													{course.locked === true ? 'lock' : 'lock_open'}
 												</span>
 											</div>
 										))}
@@ -327,7 +366,7 @@ const Planner = () => {
 							</tr>
 						))}
 					</tbody>
-				</table >
+				</table>
 			);
 		} else if (userSchedule === null) {
 			return <p>Loading...</p>;
@@ -350,6 +389,25 @@ const Planner = () => {
 				</div>
 			</nav>
 			<div className='planner'>{renderScheduleTable()}</div>
+
+			{/* Major Popup */}
+			{majorPopupOpen && (
+				<div className='major-popup'>
+					<h3>Enter Your Major</h3>
+					<input
+						type='text'
+						value={major}
+						onChange={(e) => setMajor(e.target.value)}
+					/>
+					<input
+						type='text'
+						value={name}
+						onChange={(e) => setName(e.target.value)}
+						placeholder='Enter your name'
+					/>
+					<button onClick={handleMajorSubmit}>Submit</button>
+				</div>
+			)}
 		</>
 	);
 };
