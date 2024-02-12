@@ -194,6 +194,7 @@ const Planner = () => {
 	};
 
 	// Function to generate a new schedule based on major requirements and pre-requisites
+	// Function to generate a new schedule based on major requirements and pre-requisites
 	const generateNewSchedule = (majorRequirements, addedClasses) => {
 		const newSchedule = {};
 		const years = Array.from({ length: 4 }, (_, i) => i + 1);
@@ -211,7 +212,7 @@ const Planner = () => {
 						!addedClasses.includes(course) &&
 						majorRequirements.classRequirements[course][0] === null
 					) {
-						quarterSchedule.push(course);
+						quarterSchedule.push({ class: course, locked: false }); // Updated to add class as a map
 						addedClasses.push(course);
 					}
 				});
@@ -233,7 +234,7 @@ const Planner = () => {
 							majorRequirements.classRequirements[course] !== null &&
 							arePrerequisitesSatisfied(course, majorRequirements, addedClasses)
 						) {
-							quarterSchedule.push(course);
+							quarterSchedule.push({ class: course, locked: false }); // Updated to add class as a map
 							addedClasses.push(course);
 						}
 					});
@@ -241,7 +242,7 @@ const Planner = () => {
 				// If needed, fill in the remaining slots with random classes
 				while (quarterSchedule.length < 2) {
 					const randomClass = getRandomClass();
-					quarterSchedule.push(randomClass);
+					quarterSchedule.push({ class: randomClass, locked: false }); // Updated to add class as a map
 					addedClasses.push(randomClass);
 				}
 
@@ -315,7 +316,7 @@ const Planner = () => {
 														: 'schedule-table-class highlight'
 												}
 												key={index}>
-												{course || 'No course'}
+												{course.class || 'No course'}
 												<span
 													className='material-symbols-outlined'
 													onClick={async () => {
