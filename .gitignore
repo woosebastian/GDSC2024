@@ -21,3 +21,6 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+__pycache__/
+
+year-planner-a2b3a-firebase-adminsdk-c9kdw-51fc301598.json
