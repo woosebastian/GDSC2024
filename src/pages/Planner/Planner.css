@@ -1,133 +1,184 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
 
 .navbar {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	padding: 1rem;
-	background-color: rgb(235, 244, 253);
-	font-family: 'Inter', sans-serif;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: rgb(235, 244, 253);
+  font-family: 'Inter', sans-serif;
 
-	/* .navbar-title {} */
+  /* .navbar-title {} */
 
-	.nav-links {
-		display: flex;
-		flex-direction: row;
-		margin-left: 10px;
-		text-decoration: none;
-		color: #333;
-	}
+  .nav-links {
+    display: flex;
+    flex-direction: row;
+    margin-left: 10px;
+    text-decoration: none;
+    color: #333;
+  }
 
-	.navbar-buttons {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		margin-left: 20px;
-		background-color: rgb(231, 244, 255);
-		border: solid black 2px;
-		border-radius: 20px;
-		width: 100px;
-		height: 30px;
-		transition: background-color, 0.5s;
-		font-size: 16px;
-	}
+  .navbar-buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-left: 20px;
+    background-color: rgb(231, 244, 255);
+    border: solid black 2px;
+    border-radius: 20px;
+    width: 100px;
+    height: 30px;
+    transition: background-color, 0.5s;
+    font-size: 16px;
+  }
 
-	.navbar-buttons:hover {
-		background-color: rgb(216, 236, 253);
-		cursor: pointer;
-	}
+  .navbar-buttons:hover {
+    background-color: rgb(216, 236, 253);
+    cursor: pointer;
+  }
 }
 
 .planner {
-	font-family: 'Inter', sans-serif;
-	margin: 20px;
+  font-family: 'Inter', sans-serif;
+  margin: 20px;
 
-	.schedule-table {
-		width: 100%;
-		border-collapse: collapse;
-		margin-top: 20px;
-		/* https://stackoverflow.com/questions/21495634/how-to-make-a-table-with-equal-column-widths-in-css */
-		/* https://support.symphony.com/hc/en-us/articles/360016442352-How-to-amend-an-HTML-table-column-width#:~:text=The%20table%2Dlayout%3Aauto%20parameter,in%20the%20table%20as%20desired. */
-		table-layout: auto;
+  .schedule-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    /* https://stackoverflow.com/questions/21495634/how-to-make-a-table-with-equal-column-widths-in-css */
+    /* https://support.symphony.com/hc/en-us/articles/360016442352-How-to-amend-an-HTML-table-column-width#:~:text=The%20table%2Dlayout%3Aauto%20parameter,in%20the%20table%20as%20desired. */
+    table-layout: auto;
 
-		.schedule-table-header {
-			.schedule-table-column-header {
-				background-color: #f2f2f2;
-				padding: 10px;
-				text-align: left;
-				border: solid black 1px;
-			}
-		}
+    .schedule-table-header {
+      .schedule-table-column-header {
+        background-color: #f2f2f2;
+        padding: 10px;
+        text-align: left;
+        border: solid black 1px;
+      }
+    }
 
-		.schedule-table-row {
-			.schedule-table-year {
-				border: 1px solid #4c0808;
-				padding: 10px;
-				width: 10%;
-			}
+    .schedule-table-row {
+      .schedule-table-year {
+        border: 1px solid #4c0808;
+        padding: 10px;
+        width: 10%;
+      }
 
-			.schedule-table-season {
-				border: 1px solid #4c0808;
-				width: 22.5%;
+      .schedule-table-season {
+        border: 1px solid #4c0808;
+        width: 22.5%;
 
-				.schedule-table-class {
-					display: flex;
-					flex-direction: row;
-					padding: 10px;
-					justify-content: space-between;
+        .schedule-table-class {
+          display: flex;
+          flex-direction: row;
+          padding: 10px;
+          justify-content: space-between;
 
-					/*https://fonts.google.com/icons?selected=Material+Symbols+Outlined:lock:FILL@0;wght@400;GRAD@0;opsz@24&icon.query=lock*/
-					.material-symbols-outlined {
-						cursor: pointer;
-						visibility: hidden;
+          /*https://fonts.google.com/icons?selected=Material+Symbols+Outlined:lock:FILL@0;wght@400;GRAD@0;opsz@24&icon.query=lock*/
+          .material-symbols-outlined {
+            cursor: pointer;
+            visibility: hidden;
 
-						font-variation-settings:
-							'FILL' 0,
-							'wght' 400,
-							'GRAD' 0,
-							'opsz' 24
-					}
-				}
+            font-variation-settings:
+              'FILL' 0,
+              'wght' 400,
+              'GRAD' 0,
+              'opsz' 24
+          }
+        }
 
-				.schedule-table-class:hover {
-					background-color: rgb(208, 225, 241);
-					/* cursor: pointer; */
+        .schedule-table-class:hover {
+          background-color: rgb(208, 225, 241);
+          /* cursor: pointer; */
 
-					/*https://fonts.google.com/icons?selected=Material+Symbols+Outlined:lock:FILL@0;wght@400;GRAD@0;opsz@24&icon.query=lock*/
-					.material-symbols-outlined {
-						cursor: pointer;
-						visibility: visible;
+          /*https://fonts.google.com/icons?selected=Material+Symbols+Outlined:lock:FILL@0;wght@400;GRAD@0;opsz@24&icon.query=lock*/
+          .material-symbols-outlined {
+            cursor: pointer;
+            visibility: visible;
 
-						font-variation-settings:
-							'FILL' 0,
-							'wght' 400,
-							'GRAD' 0,
-							'opsz' 24
-					}
-				}
+            font-variation-settings:
+              'FILL' 0,
+              'wght' 400,
+              'GRAD' 0,
+              'opsz' 24
+          }
+        }
 
-				/* https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_nesting/Using_CSS_nesting */
-				& .highlight {
-					font-weight: 700;
-				}
-			}
+        /* https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_nesting/Using_CSS_nesting */
+        & .highlight {
+          font-weight: 700;
+        }
+      }
 
-			.schedule-table-season:hover {
-				background-color: aliceblue;
-				/* cursor: pointer; */
-			}
-		}
-	}
+      .schedule-table-season:hover {
+        background-color: aliceblue;
+        /* cursor: pointer; */
+      }
+    }
+  }
+}
+
+.major-popup {
+  display: flex;
+  flex-direction: column;
+  font-family: 'Inter', sans-serif;
+  align-items: center;
+  justify-content: space-between;
+  height: 120px;
+
+  .prompt {
+    font-weight: 700;
+    font-size: 20px;
+  }
+
+  .major-input {
+    border: 0px;
+    border-bottom: 2px solid gray;
+    width: 200px;
+    text-align: center;
+    font-size: 16px;
+    transition: border-bottom, 0.25s;
+  }
+
+  .major-input:focus {
+    border-bottom: 2px solid black;
+  }
+
+  .submit-onboarding {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgb(231, 244, 255);
+    border: solid black 2px;
+    border-radius: 20px;
+    width: 100px;
+    height: 30px;
+    transition: background-color, 0.5s;
+    font-size: 16px;
+  }
+
+  .submit-onboarding:hover {
+    background-color: rgb(216, 236, 253);
+    cursor: pointer;
+  }
 }
 
 .loading-message {
-	font-size: 18px;
-	font-weight: bold;
-	margin-top: 20px;
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 20px;
 }
 
 .no-data-message {
-	font-size: 18px;
-	color: red;
-	margin-top: 20px;
+  font-size: 18px;
+  color: red;
+  margin-top: 20px;
+}
+
+/* https://stackoverflow.com/questions/3397113/how-to-remove-focus-border-outline-around-text-input-boxes-chrome */
+textarea:focus,
+input:focus {
+  outline: none;
 }
