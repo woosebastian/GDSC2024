@@ -168,19 +168,19 @@ const Planner = () => {
       const schedulesQuerySnapshot = await getDocs(schedulesQuery);
 
       let newSchedule;
+      const scheduleData = schedulesQuerySnapshot.docs[0].data();
+      const currentSchedule = Array.isArray(scheduleData.schedule)
+        ? scheduleData.schedule
+        : [];
       if (!schedulesQuerySnapshot.empty) {
         // User already has a schedule document, generate a new schedule based on existing data
-        const scheduleData = schedulesQuerySnapshot.docs[0].data();
-        const currentSchedule = Array.isArray(scheduleData.schedule)
-          ? scheduleData.schedule
-          : [];
         const addedClasses = currentSchedule.flatMap((season) =>
           season.flatMap((course) => course)
         );
-        newSchedule = generateNewSchedule(majorRequirements, addedClasses);
+        newSchedule = generateNewSchedule(scheduleData, majorRequirements, addedClasses);
       } else {
         // User doesn't have a schedule document, generate a new schedule from scratch
-        newSchedule = generateNewSchedule(majorRequirements, []);
+        newSchedule = generateNewSchedule(scheduleData, majorRequirements, []);
       }
 
       // Update the schedule in the Firebase database
@@ -195,10 +195,11 @@ const Planner = () => {
 
   // Function to generate a new schedule based on major requirements and pre-requisites
   // Function to generate a new schedule based on major requirements and pre-requisites
-  const generateNewSchedule = (majorRequirements, addedClasses) => {
+  const generateNewSchedule = (previousSchedule, majorRequirements, addedClasses) => {
     const newSchedule = {};
     const years = Array.from({length: 4}, (_, i) => i + 1);
     const quarters = ['fall', 'winter', 'spring', 'summer'];
+    // const allClasses = []; // New array to keep track of all classes
 
     years.forEach((year) => {
       newSchedule[year] = {};
@@ -212,8 +213,19 @@ const Planner = () => {
             !addedClasses.includes(course) &&
             majorRequirements.classRequirements[course][0] === null
           ) {
-            quarterSchedule.push({class: course, locked: false}); // Updated to add class as a map
-            addedClasses.push(course);
+            console.log("previousSchedule", previousSchedule);
+            const existingClass = previousSchedule["schedule"][year][quarter].find((c) => c.class === course && c.locked);
+            console.log("existingClass", existingClass);
+            if (existingClass === undefined) {
+              console.log("not locked", course);
+              quarterSchedule.push({class: course, locked: false}); // Updated to add class as a map
+              addedClasses.push(course);
+            }
+            else {
+              console.log("locked", course);
+              quarterSchedule.push({class: course, locked: true}); // Updated to add class as a map
+              addedClasses.push(course);
+            }
           }
         });
 
@@ -234,8 +246,20 @@ const Planner = () => {
               majorRequirements.classRequirements[course] !== null &&
               arePrerequisitesSatisfied(course, majorRequirements, addedClasses)
             ) {
-              quarterSchedule.push({class: course, locked: false}); // Updated to add class as a map
-              addedClasses.push(course);
+              const existingClass = previousSchedule["schedule"][year][quarter].find((c) => c.class === course && c.locked);
+              // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/includes
+              // includes
+              console.log("existingClass", existingClass);
+              if (existingClass === undefined) {
+                console.log("not locked", course);
+                quarterSchedule.push({class: course, locked: false}); // Updated to add class as a map
+                addedClasses.push(course);
+              }
+              else {
+                console.log("locked", course);
+                quarterSchedule.push({class: course, locked: true}); // Updated to add class as a map
+                addedClasses.push(course);
+              }
             }
           });
 
