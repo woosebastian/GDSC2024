@@ -2,6 +2,7 @@ import React, {useState, useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {useAuth, auth} from '../../firebase';
 import {signOut} from 'firebase/auth';
+
 import {
   doc,
   setDoc,
@@ -15,18 +16,16 @@ import {
 } from 'firebase/firestore';
 
 import './Planner.css';
+import '../../MajorContext';
 
 // https://stackoverflow.com/questions/57373072/state-is-not-defined
 const Planner = () => {
   const [rerender, setRerender] = useState(false);
-  const [name, setName] = useState('');
   const [userName, setUserName] = useState('');
-  const [userSchedule, setUserSchedule] = useState([]);
-  const [majorPopupOpen, setMajorPopupOpen] = useState(false); // State to track whether major popup is open
   const [major, setMajor] = useState(''); // State to store user's major
+  const [userSchedule, setUserSchedule] = useState([]);
   const {currentUser} = useAuth();
   const navigate = useNavigate();
-
   useEffect(() => {
     const fetchUserData = async () => {
       if (currentUser) {
@@ -37,7 +36,6 @@ const Planner = () => {
           usersCollectionRef,
           where('_userId', '==', currentUser.uid)
         );
-
         try {
           const usersQuerySnapshot = await getDocs(usersQuery);
 
@@ -61,7 +59,7 @@ const Planner = () => {
             }
           } else {
             // User document does not exist, open major popup
-            setMajorPopupOpen(true);
+            navigate('/onboarding');
           }
         } catch (error) {
           console.error('Error fetching user data:', error.message);
@@ -73,8 +71,6 @@ const Planner = () => {
   }, [currentUser]);
 
   // Function to handle major submission
-  // Function to handle major submission
-  // Function to handle major submission
   const handleMajorSubmit = async () => {
     try {
       const db = getFirestore();
@@ -83,7 +79,7 @@ const Planner = () => {
       // Create or update user document with name, major, and email
       await setDoc(userRef, {
         _userId: currentUser.uid,
-        name: name,
+        name: userName,
         major: major,
         email: currentUser.email,
       });
@@ -94,7 +90,7 @@ const Planner = () => {
       // Update the schedule in the Firebase database
       await updateScheduleInFirebase(currentUser.uid, newSchedule);
 
-      setMajorPopupOpen(false); // Close major popup
+
     } catch (error) {
       console.error('Error creating user document:', error.message);
     }
@@ -136,7 +132,7 @@ const Planner = () => {
     try {
       if (!currentUser) {
         console.error('User not logged in');
-        return;
+        navigate('/onboarding');
       }
 
       const db = getFirestore();
@@ -403,26 +399,6 @@ const Planner = () => {
         </div>
       </nav>
       <div className='planner'>{renderScheduleTable()}</div>
-
-      {/* Major Popup */}
-      {majorPopupOpen && (
-        <div className='major-popup'>
-          <div className='prompt'>What's your major?</div>
-          <input
-            className="major-input"
-            type='text'
-            value={major}
-            onChange={(e) => setMajor(e.target.value)}
-          />
-          <input
-            type='text'
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder='Enter your name'
-          />
-          <div className='submit-onboarding' onClick={handleMajorSubmit}>Submit</div>
-        </div>
-      )}
     </>
   );
 };

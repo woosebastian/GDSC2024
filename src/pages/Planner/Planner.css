@@ -120,51 +120,6 @@
   }
 }
 
-.major-popup {
-  display: flex;
-  flex-direction: column;
-  font-family: 'Inter', sans-serif;
-  align-items: center;
-  justify-content: space-between;
-  height: 120px;
-
-  .prompt {
-    font-weight: 700;
-    font-size: 20px;
-  }
-
-  .major-input {
-    border: 0px;
-    border-bottom: 2px solid gray;
-    width: 200px;
-    text-align: center;
-    font-size: 16px;
-    transition: border-bottom, 0.25s;
-  }
-
-  .major-input:focus {
-    border-bottom: 2px solid black;
-  }
-
-  .submit-onboarding {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: rgb(231, 244, 255);
-    border: solid black 2px;
-    border-radius: 20px;
-    width: 100px;
-    height: 30px;
-    transition: background-color, 0.5s;
-    font-size: 16px;
-  }
-
-  .submit-onboarding:hover {
-    background-color: rgb(216, 236, 253);
-    cursor: pointer;
-  }
-}
-
 .loading-message {
   font-size: 18px;
   font-weight: bold;
