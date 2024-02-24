@@ -14,13 +14,14 @@ import {
 } from 'firebase/firestore';
 
 import './Onboarding.css';
+import {generateSchedule} from '../Planner/Planner';
 
 const Onboarding = () => {
 	const [major, setMajor] = useState('');
 	const [userName, setUserName] = useState('');
 	const [name, setName] = useState(''); // State to store user's name
 	const navigate = useNavigate();
-	const [setUserSchedule] = useState([]);
+	const [userSchedule, setUserSchedule] = useState({});
 	const { currentUser } = useAuth();
 
 	useEffect(() => {
@@ -45,77 +46,92 @@ const Onboarding = () => {
 		fetchUserData();
 	}, [currentUser]);
 
-	const generateUserSchedule = async () => {
-		try {
-			if (!currentUser) {
-				console.error('User not logged in');
-				navigate('/onboarding');
-				return;
-			}
+	// const generateUserSchedule = async () => {
+  //   try {
+  //     if (!currentUser) {
+  //       console.error('User not logged in');
+	// 			navigate('/onboarding');
+	// 			return;
+	// 		}
+  //     console.log('generating user schedule');
+      
+	// 		const db = getFirestore();
+      
+	// 		const majorReq = collection(db, 'majorRequirements');
+	// 		const majorReqQuery = query(
+  //       majorReq,
+	// 			where('major', '==', 'Computer Science B.S.')
+  //       );
+    
+  //     const majorRequirementsDoc = await getDocs(majorReqQuery);
+      
+  //     if (majorRequirementsDoc.empty) {
+  //       console.error('Major requirements document not found');
+  //       return;
+  //     }
+      
+  //     const majorRequirements = majorRequirementsDoc.docs[0].data();
+      
+  //     console.log('Major Requirements:', majorRequirements);
+      
+  //     // Check if the user already has a schedule document
+  //     const schedulesCollectionRef = collection(db, 'schedules');
+  //     const schedulesQuery = query(
+  //       schedulesCollectionRef,
+  //       where('_userId', '==', currentUser.uid)
+  //       );
+        
+  //     const schedulesQuerySnapshot = await getDocs(schedulesQuery);
+      
+  //     // if (schedulesQuerySnapshot.empty) {
+  //     //   console.log('User does not have a schedule document yet');
+  //     //   return;
+  //     // }
 
-			const db = getFirestore();
+  //     console.log('reaching here', schedulesQuerySnapshot);
+      
+  //     let scheduleData;
+  //     if (schedulesQuerySnapshot.docs.length > 0) {
+  //       scheduleData = schedulesQuerySnapshot.docs[0].data();
+  //     }
+  //     // const currentSchedule = Array.isArray(scheduleData.schedule)
+  //     // ? scheduleData.schedule
+  //     // : [];
+  //     console.log('reaching here2');
+  //     console.log('scheduleData.schedule:', scheduleData.schedule);
+  //     const currentSchedule = scheduleData.schedule != undefined
+  //     ? scheduleData.schedule
+  //     : [];
+  //     console.log('reaching here3');
 
-			const majorReq = collection(db, 'majorRequirements');
-			const majorReqQuery = query(
-				majorReq,
-				where('major', '==', 'Computer Science B.S.')
-			);
 
-			const majorRequirementsDoc = await getDocs(majorReqQuery);
+	// 		let newSchedule;
+	// 		if (!schedulesQuerySnapshot.empty) {
+	// 			// User already has a schedule document, generate a new schedule based on existing data
+	// 			const addedClasses = currentSchedule.flatMap((season) =>
+	// 				season.flatMap((course) => course)
+	// 			);
+	// 			newSchedule = generateNewSchedule(
+	// 				scheduleData,
+	// 				majorRequirements,
+	// 				addedClasses
+	// 			);
+	// 		} else {
+	// 			// User doesn't have a schedule document, generate a new schedule from scratch
+	// 			newSchedule = generateNewSchedule(scheduleData, majorRequirements, []);
+	// 		}
+  //     console.log('newSchedule', newSchedule);
 
-			if (majorRequirementsDoc.empty) {
-				console.error('Major requirements document not found');
-				return;
-			}
+	// 		// Update the schedule in the Firebase database
+	// 		await updateScheduleInFirebase(currentUser.uid, newSchedule);
 
-			const majorRequirements = majorRequirementsDoc.docs[0].data();
-
-			console.log('Major Requirements:', majorRequirements);
-
-			// Check if the user already has a schedule document
-			const schedulesCollectionRef = collection(db, 'schedules');
-			const schedulesQuery = query(
-				schedulesCollectionRef,
-				where('_userId', '==', currentUser.uid)
-			);
-
-			const schedulesQuerySnapshot = await getDocs(schedulesQuery);
-
-			if (schedulesQuerySnapshot.empty) {
-				console.log('User does not have a schedule document yet');
-				return;
-			}
-
-			const scheduleData = schedulesQuerySnapshot.docs[0].data();
-			const currentSchedule = Array.isArray(scheduleData.schedule)
-				? scheduleData.schedule
-				: [];
-
-			let newSchedule;
-			if (!schedulesQuerySnapshot.empty) {
-				// User already has a schedule document, generate a new schedule based on existing data
-				const addedClasses = currentSchedule.flatMap((season) =>
-					season.flatMap((course) => course)
-				);
-				newSchedule = generateNewSchedule(
-					scheduleData,
-					majorRequirements,
-					addedClasses
-				);
-			} else {
-				// User doesn't have a schedule document, generate a new schedule from scratch
-				newSchedule = generateNewSchedule(scheduleData, majorRequirements, []);
-			}
-
-			// Update the schedule in the Firebase database
-			await updateScheduleInFirebase(currentUser.uid, newSchedule);
-
-			// Update userSchedule state with the new schedule
-			setUserSchedule(newSchedule);
-		} catch (error) {
-			console.error('Error generating schedule:', error.message);
-		}
-	};
+	// 		// Update userSchedule state with the new schedule
+	// 		setUserSchedule(newSchedule);
+	// 	} catch (error) {
+	// 		console.error('Error generating schedule:', error.message);
+	// 	}
+	// 	console.log("finished function.");
+	// };
 
 	const updateScheduleInFirebase = async (userId, newSchedule) => {
 		try {
@@ -272,7 +288,8 @@ const Onboarding = () => {
 			console.log('User document updated successfully');
 
 			// Generate the schedule based on major requirements
-			await generateUserSchedule();
+			// await generateUserSchedule();
+      await generateSchedule();
 
 			navigate('/planner');
 		} catch (error) {

@@ -1,4 +1,8 @@
-import React, { useState, useEffect } from 'react';
+// https://react.dev/learn/importing-and-exporting-components
+// https://stackoverflow.com/questions/57417643/export-function-inside-react-component-or-access-state-in-same-file-outside-of-c
+// https://stackoverflow.com/questions/66737429/export-function-inside-functional-component-in-react
+
+import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth, auth } from '../../firebase';
 import { signOut } from 'firebase/auth';
@@ -25,22 +29,25 @@ const Planner = () => {
 	const [userSchedule, setUserSchedule] = useState([]);
 	const { currentUser } = useAuth();
 	const navigate = useNavigate();
-	useEffect(() => {
-		const fetchUserData = async () => {
-			if (currentUser) {
-				const db = getFirestore();
-
+	
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (currentUser) {
+        const db = getFirestore();
+        
 				const usersCollectionRef = collection(db, 'users');
 				const usersQuery = query(
-					usersCollectionRef,
+          usersCollectionRef,
 					where('_userId', '==', currentUser.uid)
-				);
-				try {
+          );
+          try {
+          console.log(currentUser);
 					const usersQuerySnapshot = await getDocs(usersQuery);
 
 					if (!usersQuerySnapshot.empty) {
-						const userData = usersQuerySnapshot.docs[0].data();
-						setUserName(userData.name);
+						// const userData = usersQuerySnapshot.docs[0].data();
+						// setUserName(userData.name);
+            setUserName(currentUser.displayName);
 
 						const schedulesCollectionRef = collection(db, 'schedules');
 						const schedulesQuery = query(
@@ -101,70 +108,72 @@ const Planner = () => {
 		}
 	};
 
-	const generateSchedule = async () => {
-		try {
-			if (!currentUser) {
-				console.error('User not logged in');
-				navigate('/onboarding');
-			}
+  // https://dev.to/jeetvora331/different-types-of-export-in-react-21p8
+  const generateSchedule = async () => {
+  try {
+    if (!currentUser) {
+      console.error('User not logged in');
+      navigate('/onboarding');
+    }
+    console.log('generating schedule');
+    const db = getFirestore();
 
-			const db = getFirestore();
+    const majorReq = collection(db, 'majorRequirements');
+    const majorReqQuery = query(
+      majorReq,
+      where('major', '==', 'Computer Science B.S.')
+    );
 
-			const majorReq = collection(db, 'majorRequirements');
-			const majorReqQuery = query(
-				majorReq,
-				where('major', '==', 'Computer Science B.S.')
-			);
+    const majorRequirementsDoc = await getDocs(majorReqQuery);
 
-			const majorRequirementsDoc = await getDocs(majorReqQuery);
+    if (majorRequirementsDoc.empty) {
+      console.error('Major requirements document not found');
+      return;
+    }
 
-			if (majorRequirementsDoc.empty) {
-				console.error('Major requirements document not found');
-				return;
-			}
+    const majorRequirements = majorRequirementsDoc.docs[0].data();
 
-			const majorRequirements = majorRequirementsDoc.docs[0].data();
+    console.log('Major Requirements:', majorRequirements);
 
-			console.log('Major Requirements:', majorRequirements);
+    // Check if the user already has a schedule document
+    const schedulesCollectionRef = collection(db, 'schedules');
+    const schedulesQuery = query(
+      schedulesCollectionRef,
+      where('_userId', '==', currentUser.uid)
+    );
 
-			// Check if the user already has a schedule document
-			const schedulesCollectionRef = collection(db, 'schedules');
-			const schedulesQuery = query(
-				schedulesCollectionRef,
-				where('_userId', '==', currentUser.uid)
-			);
+    const schedulesQuerySnapshot = await getDocs(schedulesQuery);
 
-			const schedulesQuerySnapshot = await getDocs(schedulesQuery);
+    let newSchedule;
+    const scheduleData = schedulesQuerySnapshot.docs[0].data();
+    const currentSchedule = Array.isArray(scheduleData.schedule)
+      ? scheduleData.schedule
+      : [];
+    if (!schedulesQuerySnapshot.empty) {
+      // User already has a schedule document, generate a new schedule based on existing data
+      const addedClasses = currentSchedule.flatMap((season) =>
+        season.flatMap((course) => course)
+      );
+      console.log("addedClasses: ", addedClasses);
+      newSchedule = generateNewSchedule(
+        scheduleData,
+        majorRequirements,
+        addedClasses
+      );
+    } else {
+      // User doesn't have a schedule document, generate a new schedule from scratch
+      newSchedule = generateNewSchedule(scheduleData, majorRequirements, {});
+    }
 
-			let newSchedule;
-			const scheduleData = schedulesQuerySnapshot.docs[0].data();
-			const currentSchedule = Array.isArray(scheduleData.schedule)
-				? scheduleData.schedule
-				: [];
-			if (!schedulesQuerySnapshot.empty) {
-				// User already has a schedule document, generate a new schedule based on existing data
-				const addedClasses = currentSchedule.flatMap((season) =>
-					season.flatMap((course) => course)
-				);
-				newSchedule = generateNewSchedule(
-					scheduleData,
-					majorRequirements,
-					addedClasses
-				);
-			} else {
-				// User doesn't have a schedule document, generate a new schedule from scratch
-				newSchedule = generateNewSchedule(scheduleData, majorRequirements, []);
-			}
+    // Update the schedule in the Firebase database
+    await updateScheduleInFirebase(currentUser.uid, newSchedule);
 
-			// Update the schedule in the Firebase database
-			await updateScheduleInFirebase(currentUser.uid, newSchedule);
-
-			// Update userSchedule state with the new schedule
-			setUserSchedule(newSchedule);
-		} catch (error) {
-			console.error('Error generating schedule:', error.message);
-		}
-	};
+    // Update userSchedule state with the new schedule
+    setUserSchedule(newSchedule);
+  } catch (error) {
+    console.error('Error generating schedule:', error.message);
+  }
+};
 
 	// Function to generate a new schedule based on major requirements and pre-requisites
 	// Function to generate a new schedule based on major requirements and pre-requisites
@@ -177,11 +186,11 @@ const Planner = () => {
 		const years = Array.from({ length: 4 }, (_, i) => i + 1);
 		const quarters = ['fall', 'winter', 'spring', 'summer'];
 		// const allClasses = []; // New array to keep track of all classes
-
 		years.forEach((year) => {
 			newSchedule[year] = {};
 			quarters.forEach((quarter) => {
 				const quarterSchedule = [];
+				console.log("in generate new schedule.");
 
 				// First, add classes with null value
 				Object.keys(majorRequirements.classRequirements).forEach((course) => {
@@ -190,6 +199,8 @@ const Planner = () => {
 						!addedClasses.includes(course) &&
 						majorRequirements.classRequirements[course][0] === null
 					) {
+						generateNewSchedule(previousSchedule, majorRequirements, addedClasses);
+					} else {
 						console.log('previousSchedule', previousSchedule);
 						const existingClass = previousSchedule['schedule'][year][
 							quarter
@@ -387,3 +398,43 @@ const Planner = () => {
 };
 
 export default Planner;
+
+
+//
+
+Component One
+
+
+
+const ComponentOne = forwardRef((props, ref) => {
+    useImperativeHandle(ref, () => ({
+        hello() {
+            console.log("Hello, says the componentOne");
+        }
+    }));
+
+    return (
+        <div></div>
+    );
+});
+
+export default ComponentOne;
+
+
+Component Two
+
+import React { useRef } from "react";
+import ComponentOne from "./ComponentOne";
+
+const ComponentTwo = () => {
+    const componentOneRef = useRef(null);
+    const componentOne = <ComponentOne ref={ componentOneRef } />;
+   
+    return (
+        <div>
+            <button onClick={ () => componentOneRef.current.hello() }>Hello</button>
+        </div>
+    );
+}
+
+export default componentTwo;
