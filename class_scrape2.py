@@ -30,53 +30,32 @@ def scrape_links(links):
             extra_fields_div = soup.find("div", class_="extraFields")
 
             if extra_fields_div:
-                # Extract the text containing prerequisites
-                prerequisite_text = extra_fields_div.find(text="Prerequisite(s):")
-                if prerequisite_text:
-                    # Extract the prerequisite courses
-                    prerequisite_courses = prerequisite_text.find_next_sibling(
-                        "p"
-                    ).text.strip()
+                # Extract <a> tags within the "extraFields" div
+                a_tags_sub = extra_fields_div.find_all("a", class_="sc-courselink")
+                child_links = [a_tag.get("href") for a_tag in a_tags_sub]
+                # Extract the last portion of the link (after the last '/')
+                class_name = link.rsplit("/", 1)[-1]
 
-                    # Initialize lists for storing courses based on conditions
-                    main_list = []
-                    current_list = []
+                # Skip adding if the length of the class name is greater than 10 characters
+                if (
+                    len(class_name) <= 10
+                    and has_numbers(class_name)
+                    and "narrative" not in link
+                ):
+                    # Capitalize each word in the class name and remove dashes
+                    class_name = class_name.replace("-", " ").upper()
 
-                    # Parse the prerequisite courses
-                    for course in prerequisite_courses.split(";"):
-                        course = course.strip()
-                        if "or" in course:
-                            if current_list:
-                                main_list.append(current_list)
-                            current_list = [course.replace("or", "").strip()]
-                        elif "and" in course:
-                            if current_list:
-                                main_list.append(current_list)
-                                current_list = []
-                            current_list.extend(
-                                course.replace("and", "").strip().split(",")
-                            )
-                        else:
-                            if current_list:
-                                main_list.append(current_list)
-                                current_list = []
-                            current_list.extend(course.strip().split(","))
+                    # Format child links similarly
+                    formatted_child_links = []
+                    for child_link in child_links:
+                        child_class_name = child_link.rsplit("/", 1)[-1]
+                        child_class_name = child_class_name.replace("-", " ").upper()
+                        if len(child_class_name) <= 10 and has_numbers(
+                            child_class_name
+                        ):
+                            formatted_child_links.append(child_class_name)
 
-                    # Append the last list to the main list
-                    if current_list:
-                        main_list.append(current_list)
-
-                    # Capitalize each course name and remove dashes
-                    formatted_main_list = []
-                    for sublist in main_list:
-                        formatted_sublist = [
-                            course.replace("-", " ").strip().upper()
-                            for course in sublist
-                        ]
-                        formatted_main_list.append(formatted_sublist)
-
-                    parent_child_links[link] = formatted_main_list
-
+                    parent_child_links[class_name] = formatted_child_links
             else:
                 parent_child_links[link] = []
 
@@ -88,9 +67,5 @@ def scrape_links(links):
 
 
 # Example usage:
-parent_child_links = scrape_links(
-    [
-        "https://catalog.ucsc.edu/en/2022-2023/general-catalog/courses/narrative-courses/either-this-course"
-    ]
-)
+parent_child_links = scrape_links(links)
 print(parent_child_links)
