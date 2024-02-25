@@ -34,22 +34,21 @@ export const generateSchedule = async (
 	navigate,
 	setUserSchedule
 ) => {
-	// Add setUserSchedule as a parameter
 	try {
 		if (!currentUser) {
 			console.error('User not logged in');
 			navigate('/onboarding');
 			return;
 		}
-		console.log('generating schedule');
+		console.log('Generating schedule');
 		const db = getFirestore();
 
+		// Query for major requirements
 		const majorReq = collection(db, 'majorRequirements');
 		const majorReqQuery = query(
 			majorReq,
 			where('major', '==', 'Computer Science B.S.')
 		);
-
 		const majorRequirementsDoc = await getDocs(majorReqQuery);
 
 		if (majorRequirementsDoc.empty) {
@@ -58,35 +57,32 @@ export const generateSchedule = async (
 		}
 
 		const majorRequirements = majorRequirementsDoc.docs[0].data();
-
 		console.log('Major Requirements:', majorRequirements);
 
+		// Query for user's schedule
 		const schedulesCollectionRef = collection(db, 'schedules');
 		const schedulesQuery = query(
 			schedulesCollectionRef,
 			where('_userId', '==', currentUser.uid)
 		);
-
 		const schedulesQuerySnapshot = await getDocs(schedulesQuery);
 
 		if (!schedulesQuerySnapshot.empty) {
-			let newSchedule;
-			const scheduleData = schedulesQuerySnapshot.docs[0].data();
-			const currentSchedule = Array.isArray(scheduleData.schedule)
-				? scheduleData.schedule
-				: [];
-			const addedClasses = currentSchedule.flatMap((season) =>
-				season.flatMap((course) => course)
-			);
-			console.log('addedClasses: ', addedClasses);
-			newSchedule = generateNewSchedule(
-				scheduleData,
+			// User has an existing schedule
+			console.log('User has an existing schedule');
+			const scheduleDoc = schedulesQuerySnapshot.docs[0];
+			const scheduleData = scheduleDoc.data();
+			const existingSchedule = scheduleData.schedule;
+			const newSchedule = generateNewSchedule(
+				existingSchedule,
 				majorRequirements,
-				addedClasses
+				{}
 			);
 			await updateScheduleInFirebase(currentUser.uid, newSchedule);
 			setUserSchedule(newSchedule); // Update userSchedule state with the new schedule
 		} else {
+			// User does not have an existing schedule
+			// Generate a new schedule from scratch
 			const newSchedule = generateNewSchedule({}, majorRequirements, {});
 			await updateScheduleInFirebase(currentUser.uid, newSchedule);
 			setUserSchedule(newSchedule); // Update userSchedule state with the new schedule
@@ -256,7 +252,9 @@ const Planner = () => {
 				<div className='nav-links'>
 					<div
 						className='navbar-buttons'
-						onClick={generateSchedule(currentUser, navigate)}>
+						onClick={() =>
+							generateSchedule(currentUser, navigate, setUserSchedule)
+						}>
 						Generate
 					</div>
 					<div className='navbar-buttons' onClick={signOutHandler} href='/'>
@@ -363,8 +361,16 @@ const updateScheduleInFirebase = async (userId, newSchedule) => {
 const generateNewSchedule = (
 	previousSchedule,
 	majorRequirements,
-	addedClasses
+	addedClasses,
+	recursionDepth = 0
 ) => {
+	// Check if recursion depth exceeds a certain limit
+	const MAX_RECURSION_DEPTH = 10; // Adjust this value as needed
+	if (recursionDepth > MAX_RECURSION_DEPTH) {
+		console.error('Maximum recursion depth exceeded');
+		return previousSchedule; // Return the previous schedule to prevent further recursion
+	}
+
 	// Ensure addedClasses is initialized as an array
 	if (!Array.isArray(addedClasses)) {
 		addedClasses = [];
@@ -386,26 +392,9 @@ const generateNewSchedule = (
 					!addedClasses.includes(course) &&
 					majorRequirements.classRequirements[course][0] === null
 				) {
-					generateNewSchedule(
-						previousSchedule,
-						majorRequirements,
-						addedClasses
-					);
-				} else {
-					console.log('previousSchedule', previousSchedule);
-					const existingClass = previousSchedule['schedule'][year][
-						quarter
-					].find((c) => c.class === course && c.locked);
-					console.log('existingClass', existingClass);
-					if (existingClass === undefined) {
-						console.log('not locked', course);
-						quarterSchedule.push({ class: course, locked: false }); // Updated to add class as a map
-						addedClasses.push(course);
-					} else {
-						console.log('locked', course);
-						quarterSchedule.push({ class: course, locked: true }); // Updated to add class as a map
-						addedClasses.push(course);
-					}
+					console.log('Adding null class:', course);
+					quarterSchedule.push({ class: course, locked: false }); // Updated to add class as a map
+					addedClasses.push(course);
 				}
 			});
 
@@ -425,27 +414,16 @@ const generateNewSchedule = (
 						majorRequirements.classRequirements[course] !== null &&
 						arePrerequisitesSatisfied(course, majorRequirements, addedClasses)
 					) {
-						const existingClass = previousSchedule['schedule'][year][
-							quarter
-						].find((c) => c.class === course && c.locked);
-						// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/includes
-						// includes
-						console.log('existingClass', existingClass);
-						if (existingClass === undefined) {
-							console.log('not locked', course);
-							quarterSchedule.push({ class: course, locked: false }); // Updated to add class as a map
-							addedClasses.push(course);
-						} else {
-							console.log('locked', course);
-							quarterSchedule.push({ class: course, locked: true }); // Updated to add class as a map
-							addedClasses.push(course);
-						}
+						console.log('Adding class with prerequisites:', course);
+						quarterSchedule.push({ class: course, locked: false }); // Updated to add class as a map
+						addedClasses.push(course);
 					}
 				});
 
 			// If needed, fill in the remaining slots with random classes
 			while (quarterSchedule.length < 2) {
 				const randomClass = getRandomClass();
+				console.log('Adding random class:', randomClass);
 				quarterSchedule.push({ class: randomClass, locked: false }); // Updated to add class as a map
 				addedClasses.push(randomClass);
 			}
