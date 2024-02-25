@@ -41,6 +41,10 @@ export const generateSchedule = async (
 			return;
 		}
 		console.log('Generating schedule');
+
+		// Add logging here to check the value of currentUser.uid
+		console.log('Current user UID:', currentUser.uid);
+
 		const db = getFirestore();
 
 		// Query for major requirements
@@ -375,56 +379,45 @@ const generateNewSchedule = (
 	if (!Array.isArray(addedClasses)) {
 		addedClasses = [];
 	}
+
 	const newSchedule = {};
 	const years = Array.from({ length: 4 }, (_, i) => i + 1);
 	const quarters = ['fall', 'winter', 'spring', 'summer'];
-	// const allClasses = []; // New array to keep track of all classes
+
 	years.forEach((year) => {
 		newSchedule[year] = {};
 		quarters.forEach((quarter) => {
 			const quarterSchedule = [];
-			console.log('in generate new schedule.');
 
-			// First, add classes with null value
+			// Add classes with null value
 			Object.keys(majorRequirements.classRequirements).forEach((course) => {
 				if (
 					quarterSchedule.length < 2 &&
 					!addedClasses.includes(course) &&
 					majorRequirements.classRequirements[course][0] === null
 				) {
-					console.log('Adding null class:', course);
-					quarterSchedule.push({ class: course, locked: false }); // Updated to add class as a map
+					quarterSchedule.push({ class: course, locked: false }); // Add class as a map
 					addedClasses.push(course);
 				}
 			});
 
-			// Then, add other classes that have satisfied prerequisites
-			Object.keys(majorRequirements.classRequirements)
-				.sort((a, b) => {
-					const prereqsA = majorRequirements.classRequirements[a];
-					const prereqsB = majorRequirements.classRequirements[b];
-					return (
-						(prereqsA ? prereqsA.length : 0) - (prereqsB ? prereqsB.length : 0)
-					);
-				})
-				.forEach((course) => {
-					if (
-						quarterSchedule.length < 2 &&
-						!addedClasses.includes(course) &&
-						majorRequirements.classRequirements[course] !== null &&
-						arePrerequisitesSatisfied(course, majorRequirements, addedClasses)
-					) {
-						console.log('Adding class with prerequisites:', course);
-						quarterSchedule.push({ class: course, locked: false }); // Updated to add class as a map
-						addedClasses.push(course);
-					}
-				});
+			// Add other classes that have satisfied prerequisites
+			Object.keys(majorRequirements.classRequirements).forEach((course) => {
+				if (
+					quarterSchedule.length < 2 &&
+					!addedClasses.includes(course) &&
+					majorRequirements.classRequirements[course] !== null &&
+					arePrerequisitesSatisfied(course, majorRequirements, addedClasses)
+				) {
+					quarterSchedule.push({ class: course, locked: false }); // Add class as a map
+					addedClasses.push(course);
+				}
+			});
 
 			// If needed, fill in the remaining slots with random classes
 			while (quarterSchedule.length < 2) {
 				const randomClass = getRandomClass();
-				console.log('Adding random class:', randomClass);
-				quarterSchedule.push({ class: randomClass, locked: false }); // Updated to add class as a map
+				quarterSchedule.push({ class: randomClass, locked: false }); // Add class as a map
 				addedClasses.push(randomClass);
 			}
 
