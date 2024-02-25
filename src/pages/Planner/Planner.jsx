@@ -320,27 +320,37 @@ const getRandomClass = () => {
 	return randomClasses[Math.floor(Math.random() * randomClasses.length)];
 };
 
-const arePrerequisitesSatisfied = (course, majorRequirements, addedClasses) => {
+const arePrerequisitesSatisfied = async (
+	course,
+	majorRequirements,
+	addedClasses
+) => {
+	// Get the prerequisites for the given course
 	const prerequisites = majorRequirements.classRequirements[course];
 
-	console.log('Checking prerequisites for course:', course);
-	console.log('Prerequisites:', prerequisites);
-
-	if (Array.isArray(prerequisites)) {
-		// Prioritize courses with an empty string value
-		const prioritizedPrerequisites = prerequisites.sort((a, b) => {
-			if (a === null) return -1;
-			if (b === null) return 1;
-			return 0;
-		});
-
-		return prioritizedPrerequisites.every((prereq) =>
-			addedClasses.includes(prereq)
-		);
-	} else {
-		console.error('Prerequisites array is not an array for course:', course);
-		return false;
+	// If there are no prerequisites, return true
+	if (!prerequisites) {
+		return true;
 	}
+
+	// Check if all prerequisites are in the addedClasses array
+	for (const prereq of prerequisites) {
+		// Check if the prerequisite is an array, if not convert it to one
+		const prereqArray = Array.isArray(prereq) ? prereq : [prereq];
+
+		// Check if any of the prerequisite arrays are satisfied
+		const isPrereqSatisfied = prereqArray.some((singlePrereq) =>
+			addedClasses.includes(singlePrereq)
+		);
+
+		// If any of the prerequisite arrays are not satisfied, return false
+		if (!isPrereqSatisfied) {
+			return false;
+		}
+	}
+
+	// If all prerequisites are satisfied, return true
+	return true;
 };
 
 const updateScheduleInFirebase = async (userId, newSchedule) => {
