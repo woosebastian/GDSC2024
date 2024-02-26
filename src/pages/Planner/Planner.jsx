@@ -316,7 +316,7 @@ const ComponentTwo = () => {
 export { ComponentTwo };
 
 const getRandomClass = () => {
-	const randomClasses = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'];
+	const randomClasses = ['Elective'];
 	return randomClasses[Math.floor(Math.random() * randomClasses.length)];
 };
 
