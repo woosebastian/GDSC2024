@@ -399,30 +399,87 @@ const generateNewSchedule = (
 		quarters.forEach((quarter) => {
 			const quarterSchedule = [];
 
-			// Add classes with null value
-			Object.keys(majorRequirements.classRequirements).forEach((course) => {
-				if (
-					quarterSchedule.length < 2 &&
-					!addedClasses.includes(course) &&
-					majorRequirements.classRequirements[course][0] === null
-				) {
-					quarterSchedule.push({ class: course, locked: false }); // Add class as a map
-					addedClasses.push(course);
-				}
-			});
+			// // Add classes with null value
+			// Object.keys(majorRequirements.classRequirements).forEach((course) => {
+			// 	if (
+			// 		quarterSchedule.length < 2 &&
+			// 		!addedClasses.includes(course) &&
+			// 		majorRequirements.classRequirements[course][0] === null
+			// 	) {
+			// 		quarterSchedule.push({ class: course, locked: false }); // Add class as a map
+			// 		addedClasses.push(course);
+			// 	}
+			// });
 
-			// Add other classes that have satisfied prerequisites
-			Object.keys(majorRequirements.classRequirements).forEach((course) => {
-				if (
-					quarterSchedule.length < 2 &&
-					!addedClasses.includes(course) &&
-					majorRequirements.classRequirements[course] !== null &&
-					arePrerequisitesSatisfied(course, majorRequirements, addedClasses)
-				) {
-					quarterSchedule.push({ class: course, locked: false }); // Add class as a map
-					addedClasses.push(course);
-				}
-			});
+			// // Add other classes that have satisfied prerequisites
+			// Object.keys(majorRequirements.classRequirements).forEach((course) => {
+			// 	if (
+			// 		quarterSchedule.length < 2 &&
+			// 		!addedClasses.includes(course) &&
+			// 		majorRequirements.classRequirements[course] !== null &&
+			// 		arePrerequisitesSatisfied(course, majorRequirements, addedClasses)
+			// 	) {
+			// 		quarterSchedule.push({ class: course, locked: false }); // Add class as a map
+			// 		addedClasses.push(course);
+			// 	}
+			// });
+
+      // First, add classes with null value
+      Object.keys(majorRequirements.classRequirements).forEach((course) => {
+        if (
+          quarterSchedule.length < 2 &&
+          !addedClasses.includes(course) &&
+          majorRequirements.classRequirements[course][0] === null
+        ) {
+          console.log("previousSchedule", previousSchedule);
+          const existingClass = previousSchedule[year][quarter].find((c) => c.class === course && c.locked);
+          console.log("existingClass", existingClass);
+          if (existingClass === undefined) {
+            console.log("not locked", course);
+            quarterSchedule.push({class: course, locked: false}); // Updated to add class as a map
+            addedClasses.push(course);
+          }
+          else {
+            console.log("locked", course);
+            quarterSchedule.push({class: course, locked: true}); // Updated to add class as a map
+            addedClasses.push(course);
+          }
+        }
+      });
+
+      // Then, add other classes that have satisfied prerequisites
+      Object.keys(majorRequirements.classRequirements)
+        .sort((a, b) => {
+          const prereqsA = majorRequirements.classRequirements[a];
+          const prereqsB = majorRequirements.classRequirements[b];
+          return (
+            (prereqsA ? prereqsA.length : 0) -
+            (prereqsB ? prereqsB.length : 0)
+          );
+        })
+        .forEach((course) => {
+          if (
+            quarterSchedule.length < 2 &&
+            !addedClasses.includes(course) &&
+            majorRequirements.classRequirements[course] !== null &&
+            arePrerequisitesSatisfied(course, majorRequirements, addedClasses)
+          ) {
+            const existingClass = previousSchedule[year][quarter].find((c) => c.class === course && c.locked);
+            // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/includes
+            // includes
+            console.log("existingClass", existingClass);
+            if (existingClass === undefined) {
+              console.log("not locked", course);
+              quarterSchedule.push({class: course, locked: false}); // Updated to add class as a map
+              addedClasses.push(course);
+            }
+            else {
+              console.log("locked", course);
+              quarterSchedule.push({class: course, locked: true}); // Updated to add class as a map
+              addedClasses.push(course);
+            }
+          }
+        });
 
 			// If needed, fill in the remaining slots with random classes
 			while (quarterSchedule.length < 2) {
