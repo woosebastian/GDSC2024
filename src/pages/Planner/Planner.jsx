@@ -37,7 +37,7 @@ export const generateSchedule = async (
 	try {
 		if (!currentUser) {
 			console.error('User not logged in');
-			navigate('/onboarding');
+			// navigate('/onboarding');
 			return;
 		}
 		console.log('Generating schedule');
@@ -142,7 +142,7 @@ const Planner = () => {
 
 						// User document does not exist, open major popup
 						//** SET USER SCHEDULE */
-						navigate('/onboarding');
+						// navigate('/onboarding');
 					}
 				} catch (error) {
 					console.error('Error fetching user data:', error.message);
