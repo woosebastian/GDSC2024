@@ -88,6 +88,7 @@ export const generateSchedule = async (
 			// User does not have an existing schedule
 			// Generate a new schedule from scratch
 			const newSchedule = generateNewSchedule({}, majorRequirements, {});
+      console.log('updating schedule in firebase');
 			await updateScheduleInFirebase(currentUser.uid, newSchedule);
 			setUserSchedule(newSchedule); // Update userSchedule state with the new schedule
 		}
@@ -136,6 +137,31 @@ const Planner = () => {
 							setUserSchedule(scheduleData.schedule);
 						} else {
 							console.error('Schedule document does not exist.');
+
+              const db = getFirestore();
+
+              // Query for major requirements
+              const majorReq = collection(db, 'majorRequirements');
+              const majorReqQuery = query(
+                majorReq,
+                where('major', '==', 'Computer Science B.S.')
+              );
+              const majorRequirementsDoc = await getDocs(majorReqQuery);
+
+              if (majorRequirementsDoc.empty) {
+                console.error('Major requirements document not found');
+                return;
+              }
+
+              const majorRequirements = majorRequirementsDoc.docs[0].data();
+              console.log('Major Requirements:', majorRequirements);
+
+              // generateNewSchedule({}, majorRequirements, {});
+
+              const newSchedule = generateNewSchedule({}, majorRequirements, {});
+              console.log('updating schedule in firebase');
+              await updateScheduleInFirebase(currentUser.uid, newSchedule);
+              setUserSchedule(newSchedule); // Update userSchedule state with the new schedule
 						}
 					} else {
 						// Custom hook for managing user schedule state
@@ -242,33 +268,37 @@ const Planner = () => {
 					</tbody>
 				</table>
 			);
-		} else if (userSchedule === null) {
-			return <p>Loading...</p>;
-		} else {
-			return <p>No schedule data available.</p>;
+		// } 
+    // else if (userSchedule === null) {
+    } else {
+      return <p>Loading...</p>;
+			// return <p>No schedule data available.</p>;
 		}
 	};
 
 	return (
-		<>
-			<nav className='navbar'>
-				<h2 className='navbar-title'>{userName}'s Course Planner</h2>
-				<div className='nav-links'>
-					<div
-						className='navbar-buttons'
-						onClick={() =>
-							generateSchedule(currentUser, navigate, setUserSchedule)
-						}>
-						Generate
-					</div>
-					<div className='navbar-buttons' onClick={signOutHandler} href='/'>
-						Log Out
-					</div>
-				</div>
-			</nav>
-			<div className='planner'>{renderScheduleTable()}</div>
-		</>
-	);
+    userName ? (
+      <div>
+        <nav className='navbar'>
+          <h2 className='navbar-title'>{userName}'s Course Planner</h2>
+          <div className='nav-links'>
+            <div
+              className='navbar-buttons'
+              onClick={() =>
+                generateSchedule(currentUser, navigate, setUserSchedule)
+              }>
+              Generate
+            </div>
+            <div className='navbar-buttons' onClick={signOutHandler} href='/'>
+              Log Out
+            </div>
+          </div>
+        </nav>
+        <div className='planner'>{renderScheduleTable()}</div>
+    </div>
+    ) : (
+      <div></div>
+    ));
 };
 
 export default Planner;
